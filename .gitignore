@@ -47,6 +47,10 @@ lerna-debug.log*
 # Operating System Files
 .DS_Store
 
+# Environment Variables
+.env
+.env.local
+
 # Code Coverage and Test Output
 /coverage
 /.nyc_output

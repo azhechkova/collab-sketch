@@ -1,14 +1,20 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import type { RoomType } from '@/types'
 
 export const useEditorStore = defineStore('editor', () => {
   const color = ref('#000')
-  const size = ref(2)
-  const context = ref<CanvasRenderingContext2D | null>(null)
+  const size = ref(1)
+  const canvas = ref<HTMLCanvasElement | null>(null)
+  const activeRoom = ref<RoomType | null>(null)
 
-  const setupContext = (value: CanvasRenderingContext2D) => {
-    context.value = value
+  const setActiveRoom = (value: RoomType) => {
+    activeRoom.value = value
   }
 
-  return { color, context, size, setupContext }
+  const setCanvas = (value: HTMLCanvasElement) => {
+    canvas.value = value
+  }
+
+  return { color, canvas, size, setCanvas, activeRoom, setActiveRoom }
 })

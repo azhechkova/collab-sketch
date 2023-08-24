@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import type { ColorType } from '@/types'
 import Radio from '../atoms/Radio.vue'
 defineProps<{
   modelValue: string
-  colors: any[]
+  colors: ColorType[]
 }>()
 defineEmits<{
   (event: 'update:modelValue', payload: string): void
@@ -10,9 +11,8 @@ defineEmits<{
 </script>
 
 <template>
-  <div class="flex justify-center items-center h-screen">
+  <div class="flex justify-center items-center">
     <div class="p-4">
-      <h2 class="text-2xl font-semibold mb-4">Radio Button Group</h2>
       <div class="space-y-2">
         <Radio
           v-for="(item, index) in colors"
