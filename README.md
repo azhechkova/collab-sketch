@@ -15,7 +15,7 @@ To get started with the project, follow these steps:
 2. **Install dependencies**:
 
    ```bash
-      npm i
+   npm i
    ```
 
 3. **Run the Application**: Start the backend server:
