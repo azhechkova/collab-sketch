@@ -1,0 +1,68 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node.js
+node_modules
+
+# Generated Files and Directories
+.DS_Store
+dist
+dist-ssr
+coverage
+*.local
+/cypress/videos/
+/cypress/screenshots/
+test-results/
+playwright-report/
+
+# Editor-specific Directories and Files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Compiled Output and Build Artifacts
+/dist
+/node_modules
+
+# Additional Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Operating System Files
+.DS_Store
+
+# Code Coverage and Test Output
+/coverage
+/.nyc_output
+
+# IDE-specific Files and Directories
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code (VSCode) Specific
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
