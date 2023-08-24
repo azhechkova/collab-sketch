@@ -1,0 +1,18 @@
+{
+  "author": "azhechkova",
+  "license": "MIT",
+  "version": "1.0.0",
+  "name": "collab-sketch",
+  "workspaces": [
+    "packages/client",
+    "packages/server"
+  ],
+  "scripts": {
+    "start:client": "npm run dev --workspace=packages/client",
+    "start:server": "npm run start:dev --workspace=packages/server",
+    "start": "concurrently --kill-others-on-fail \"npm run start:client\"  \"npm run start:server\""
+  },
+  "dependencies": {
+    "concurrently": "^8.2.1"
+  }
+}
