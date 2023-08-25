@@ -1,9 +1,11 @@
 <script setup lang="ts">
-defineProps<{
+type BaseRadioProps = {
   label: string
   modelValue?: string
   isChecked: boolean
-}>()
+}
+
+defineProps<BaseRadioProps>()
 defineEmits<{
   (event: 'update:modelValue', payload: string): void
 }>()

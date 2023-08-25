@@ -1,43 +1,51 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useEditorStore } from '../../stores/editor'
 import type { Socket } from 'socket.io-client'
 import type { RoomType } from '../../types/index'
+import { useEditorStore } from '../../stores/editor'
+import updateRoomImage from '@/utils/updateRoomImage'
+import transformCoordinates from '@/utils/transformCoordinates'
+
+type Options = {
+  prev: {
+    x: number
+    y: number
+  }
+  point: {
+    x: number
+    y: number
+  }
+  color: string
+  width: number
+}
 
 const { socket } = defineProps<{
   socket: Socket
 }>()
 
-const el = ref<HTMLCanvasElement | null>(null)
 const editorStore = useEditorStore()
 const context = ref<CanvasRenderingContext2D | null>(null)
 const isDrawing = ref(false)
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+const previousPoint = ref<object | null>(null)
 
 const setupCanvas = () => {
-  if (!el.value) return
-  const value = el.value.getContext('2d')
+  if (!canvasRef.value) return
+  const value = canvasRef.value.getContext('2d')
   context.value = value
-  editorStore.setCanvas(el.value)
+  editorStore.setCanvas(canvasRef.value)
 
   socket.emit('findOneRoom', '64e763eaf87ac2d8f50f65f1', (newRoom: RoomType) => {
     editorStore.setActiveRoom(newRoom)
-    if (!newRoom.image) return
-    const image = new Image()
-    image.onload = function () {
-      value?.drawImage(image, 0, 0)
-    }
-    image.src = newRoom.image
+    if (value) updateRoomImage(canvasRef.value, newRoom)
   })
 
+  socket.on('draw', ([prev, point, color, width]) => {
+    if (!value) return
+    drawLine({ prev, point, color, width }, value)
+  })
   socket.on('updateRoom', (updatedRoom: RoomType) => {
-    editorStore.setActiveRoom(updatedRoom)
-    if (updatedRoom.image) {
-      const image = new Image()
-      image.onload = function () {
-        context.value?.drawImage(image, 0, 0)
-      }
-      image.src = updatedRoom.image
-    }
+    updateRoomImage(canvasRef.value, updatedRoom)
   })
 }
 
@@ -51,22 +59,36 @@ const startDrawing = (e: MouseEvent) => {
   context.value.moveTo(offsetX, offsetY)
 }
 
+const drawLine = ({ prev, point, color, width }: Options, ctx: CanvasRenderingContext2D) => {
+  ctx.lineWidth = width
+  ctx.strokeStyle = color
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  ctx.moveTo(prev.x, prev.y)
+  ctx.lineTo(point.x, point.y)
+  ctx.stroke()
+}
+
 const draw = (e: MouseEvent) => {
   if (!context.value || !isDrawing.value) return
   const { offsetX, offsetY } = e
+  const point = transformCoordinates(e.clientX, e.clientY, canvasRef.value)
+
   context.value.lineWidth = editorStore.size
   context.value.strokeStyle = editorStore.color
+  context.value.lineCap = 'round'
+
   context.value.lineTo(offsetX, offsetY)
   context.value.stroke()
 
-  const base64ImageData = el.value?.toDataURL('image/png')
-  const activeRoom = editorStore.activeRoom
-  if (!activeRoom) return
-  socket.emit('updateRoom', { ...activeRoom, image: base64ImageData }, () => {})
+  const prevPoint = previousPoint.value || point
+  socket.emit('draw', [prevPoint, point, editorStore.color, editorStore.size])
+  previousPoint.value = point
 }
 
 const stopDrawing = () => {
   isDrawing.value = false
+  previousPoint.value = null
 }
 
 onMounted(setupCanvas)
@@ -79,7 +101,7 @@ onMounted(setupCanvas)
       @mousemove="draw"
       @mouseup="stopDrawing"
       @mouseleave="stopDrawing"
-      ref="el"
+      ref="canvasRef"
       width="500"
       height="500"
       class="border-black border-solid border-2"

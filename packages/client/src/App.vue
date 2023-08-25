@@ -4,6 +4,6 @@ import MainEditor from './components/organisms/MainEditor.vue'
 
 <template>
   <main>
-    <MainEditor />
+    <MainEditor></MainEditor>
   </main>
 </template>

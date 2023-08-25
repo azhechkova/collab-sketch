@@ -1,10 +1,12 @@
 <script setup lang="ts">
-defineProps<{
+type BaseCheckboxProps = {
   label?: string
   isError?: boolean
   errorText?: string
   modelValue: boolean
-}>()
+}
+
+defineProps<BaseCheckboxProps>()
 defineEmits<{
   (event: 'update:modelValue', payload: string): void
 }>()

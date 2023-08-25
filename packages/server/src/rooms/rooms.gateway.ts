@@ -21,7 +21,6 @@ export class RoomsGateway {
 
   handleConnection(client: Socket) {
     this.connectedClients.push(client);
-    client.emit('findAllRooms', this.roomsService.findAll());
   }
 
   handleDisconnect(client: Socket) {
@@ -54,6 +53,13 @@ export class RoomsGateway {
     });
 
     return updatedRoom;
+  }
+  @SubscribeMessage('draw')
+  async draw(@MessageBody() updateRoomDto: any) {
+    this.connectedClients.forEach((client) => {
+      client.emit('draw', updateRoomDto);
+    });
+    return updateRoomDto;
   }
 
   @SubscribeMessage('removeRoom')

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Socket } from 'socket.io-client'
-import Editor from '../atoms/Editor.vue'
-import Legend from '../molecules/Legend.vue'
+import TheEditor from './TheEditor.vue'
+import TheLegend from './TheLegend.vue'
 import { inject } from 'vue'
 
 const socket = inject('socket') as Socket
@@ -9,7 +9,7 @@ const socket = inject('socket') as Socket
 
 <template>
   <div class="flex gap-2">
-    <Editor class="flex-shrink-0" :socket="socket" />
-    <Legend :socket="socket" />
+    <TheEditor class="flex-shrink-0" :socket="socket" />
+    <TheLegend :socket="socket" />
   </div>
 </template>

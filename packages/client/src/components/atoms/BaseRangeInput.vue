@@ -1,5 +1,7 @@
 <script setup lang="ts">
-defineProps<{ label?: String; modelValue: number }>()
+type BaseRangeInputProps = { label?: String; modelValue: number }
+
+defineProps<BaseRangeInputProps>()
 defineEmits<{
   (event: 'update:modelValue', payload: number): void
 }>()
