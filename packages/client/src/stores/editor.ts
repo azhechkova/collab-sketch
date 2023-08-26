@@ -22,5 +22,31 @@ export const useEditorStore = defineStore('editor', () => {
     rooms.value = value
   }
 
-  return { color, canvas, size, setCanvas, rooms, setRooms, activeRoom, setActiveRoom }
+  const updateRoom = (value: RoomType) => {
+    const updatedRooms = rooms.value.map((item) => {
+      if (value._id === item._id) {
+        return value
+      }
+      return item
+    })
+    rooms.value = updatedRooms
+  }
+
+  const addRoom = (value: RoomType) => {
+    const updatedRooms = [...rooms.value, value]
+    rooms.value = updatedRooms
+  }
+
+  return {
+    color,
+    canvas,
+    size,
+    updateRoom,
+    addRoom,
+    setCanvas,
+    rooms,
+    setRooms,
+    activeRoom,
+    setActiveRoom
+  }
 })

@@ -32,8 +32,9 @@ const onSave = () => {
   if (!context) return
 
   const newImage = context.canvas.toDataURL()
-
-  socket.emit('updateRoom', { ...activeRoom, image: newImage })
+  const newRoom = { ...activeRoom, image: newImage }
+  socket.emit('updateRoom', newRoom)
+  editorStore.updateRoom(newRoom)
 }
 </script>
 

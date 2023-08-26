@@ -32,20 +32,14 @@ const onChangeRoom = (room: RoomType) => {
 
 const onAddRoom = () => {
   socket.emit('createRoom', (newRoom: RoomType) => {
-    const updatedValue = [...store.rooms, newRoom]
-    store.setRooms(updatedValue)
+    store.addRoom(newRoom)
   })
 }
 </script>
 
 <template>
   <MainTemplate>
-    <TheSidebar
-      :onAddRoom="onAddRoom"
-      :onChangeRoom="onChangeRoom"
-      :rooms="store.rooms"
-      :activeRoom="store.activeRoom"
-    ></TheSidebar>
+    <TheSidebar :onAddRoom="onAddRoom" :onChangeRoom="onChangeRoom"></TheSidebar>
     <MainEditor></MainEditor>
   </MainTemplate>
 </template>
