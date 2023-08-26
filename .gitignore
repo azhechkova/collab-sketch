@@ -12,7 +12,6 @@ node_modules
 
 # Generated Files and Directories
 .DS_Store
-dist
 dist-ssr
 coverage
 *.local
@@ -50,6 +49,8 @@ lerna-debug.log*
 # Environment Variables
 .env
 .env.local
+.env.development
+.env.production
 
 # Code Coverage and Test Output
 /coverage

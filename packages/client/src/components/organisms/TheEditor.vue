@@ -21,8 +21,8 @@ const setupCanvas = (ctx: CanvasRenderingContext2D) => {
   if (!canvasRef.value || !store.activeRoom) return
   store.setCanvas(canvasRef.value)
 
-  socket.on('draw', ({ prev, point, color, size, room }) => {
-    if (room !== store.activeRoom?._id) return
+  socket.on('draw', ({ prev, point, color, size, roomId }) => {
+    if (roomId !== store.activeRoom?._id) return
     drawLine({ prev, point, color, size }, ctx)
   })
 
@@ -41,7 +41,10 @@ const startDrawing = (e: MouseEvent) => {
   context.moveTo(offsetX, offsetY)
 }
 
-const drawLine = ({ prev, point, color, size }: DrawReq, ctx: CanvasRenderingContext2D) => {
+const drawLine = (
+  { prev, point, color, size }: Omit<DrawReq, 'roomId'>,
+  ctx: CanvasRenderingContext2D
+) => {
   ctx.lineWidth = size
   ctx.strokeStyle = color
   ctx.lineCap = 'round'
@@ -66,13 +69,16 @@ const draw = (e: MouseEvent) => {
   context.stroke()
 
   const prevPoint = previousPoint.value || point
-  socket.emit('draw', {
+
+  const drawObj = {
     prev: prevPoint,
     point,
     color: store.color,
     size: store.size,
-    room: store.activeRoom?._id
-  })
+    roomId: store.activeRoom?._id
+  } as DrawReq
+
+  socket.emit('draw', drawObj)
   previousPoint.value = point
 }
 

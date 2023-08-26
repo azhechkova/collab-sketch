@@ -18,6 +18,7 @@ type DrawReq = {
   point: Coordinates
   color: ColorInputWithoutInstance
   size: number
+  roomId: string
 }
 
 export type { ColorType, RoomType, DrawReq, Coordinates }

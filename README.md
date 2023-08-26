@@ -18,7 +18,13 @@ To get started with the project, follow these steps:
    npm i
    ```
 
-3. **Run the Application**: Start the backend server:
+3. **Setup**: setup environment variables:
+
+   ```bash
+   cp packages/client/.env.example packages/client/.env.development && cp packages/server/.env.example packages/server/.env.development
+   ```
+
+4. **Run the Application**: Start the backend server:
 
    ```bash
    npm run start:server
@@ -33,5 +39,6 @@ To get started with the project, follow these steps:
 Access the frontend at http://localhost:5173 and the backend at http://localhost:4000.
 
 4. **Project Structure**
-   packages/server/: Nest.js backend application.
-   packages/client/: Vue.js frontend application.
+
+- packages/server/: Nest.js backend application.
+- packages/client/: Vue.js frontend application.

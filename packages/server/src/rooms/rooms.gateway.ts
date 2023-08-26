@@ -17,7 +17,7 @@ export class RoomsGateway {
   private connectedClients: Socket[] = [];
 
   afterInit() {
-    console.log('CONNECTION CONNECTED');
+    console.log('CONNECTION ESTABLISHED');
   }
 
   handleConnection(client: Socket) {
