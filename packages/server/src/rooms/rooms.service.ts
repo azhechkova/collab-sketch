@@ -11,10 +11,11 @@ export class RoomsService {
     @InjectModel(Room.name) private readonly roomModel: Model<Room>,
   ) {}
 
-  async create(createRoomDto: CreateRoomDto) {
+  async create(createRoomDto?: CreateRoomDto) {
     const newRoom = new this.roomModel(createRoomDto);
 
     await newRoom.save();
+    return newRoom;
   }
 
   async findAll() {

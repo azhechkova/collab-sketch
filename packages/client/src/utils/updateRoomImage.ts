@@ -14,10 +14,10 @@ const updateRoomImage = (canvasRef: HTMLCanvasElement | null, room: RoomType): v
   const context = canvasRef.getContext('2d')
   if (!context) return
 
-  if (!room.image) {
-    context.clearRect(0, 0, canvasRef!.width, canvasRef!.height)
-    context.beginPath()
-  } else {
+  context.clearRect(0, 0, canvasRef!.width, canvasRef!.height)
+  context.beginPath()
+
+  if (room.image) {
     const image = new Image()
 
     image.onload = function () {

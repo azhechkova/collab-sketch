@@ -3,13 +3,16 @@ import { Document } from 'mongoose';
 
 export type RoomDocument = Room & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Room extends Document {
-  @Prop()
-  name: string;
-
   @Prop({ required: false, default: null })
   image?: string;
+
+  @Prop()
+  createdAt?: Date;
+
+  @Prop()
+  updatedAt?: Date;
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);

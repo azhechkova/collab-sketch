@@ -8,13 +8,13 @@ import type { Component, ComponentPropsOptions } from 'vue'
  *
  * @param {Component} component - The Vue component to be tested.
  * @param {MountingOptions<ComponentPropsOptions>} options - Mounting options for the component.
- * @returns {Wrapper} - A mounted test wrapper with createTestingPinia plugin and specified options.
+ * @returns {VueWrapper} - A mounted test wrapper with createTestingPinia plugin and specified options.
  */
 
-export default function (
+const mountWithStore = (
   component: Component,
   options: MountingOptions<ComponentPropsOptions>
-): VueWrapper {
+): VueWrapper => {
   return mount(component, {
     global: {
       plugins: [createTestingPinia({ createSpy: vi.fn })]
@@ -22,3 +22,5 @@ export default function (
     ...options
   })
 }
+
+export default mountWithStore

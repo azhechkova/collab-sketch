@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { inject } from 'vue'
 import type { Socket } from 'socket.io-client'
+
 import TheEditor from './TheEditor.vue'
 import TheLegend from './TheLegend.vue'
-import { inject } from 'vue'
 
 const socket = inject('socket') as Socket
 </script>

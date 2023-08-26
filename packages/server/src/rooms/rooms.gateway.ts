@@ -8,6 +8,7 @@ import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { Types } from 'mongoose';
+import { DrawReq } from 'types';
 
 @WebSocketGateway({ namespace: 'rooms', cors: true, transports: ['websocket'] })
 export class RoomsGateway {
@@ -28,7 +29,7 @@ export class RoomsGateway {
   }
 
   @SubscribeMessage('createRoom')
-  create(@MessageBody() createRoomDto: CreateRoomDto) {
+  create(@MessageBody() createRoomDto?: CreateRoomDto) {
     return this.roomsService.create(createRoomDto);
   }
 
@@ -55,11 +56,11 @@ export class RoomsGateway {
     return updatedRoom;
   }
   @SubscribeMessage('draw')
-  async draw(@MessageBody() updateRoomDto: any) {
+  draw(@MessageBody() draqReq: DrawReq) {
     this.connectedClients.forEach((client) => {
-      client.emit('draw', updateRoomDto);
+      client.emit('draw', draqReq);
     });
-    return updateRoomDto;
+    return draqReq;
   }
 
   @SubscribeMessage('removeRoom')
