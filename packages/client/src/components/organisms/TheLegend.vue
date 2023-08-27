@@ -19,7 +19,7 @@ const onClick = () => {
   const canvas = editorStore.canvas
   if (!canvas) return
 
-  const context = editorStore.canvas?.getContext('2d')
+  const context = canvas.getContext('2d')
   if (!context) return
 
   context.clearRect(0, 0, canvas.width, canvas.height)
@@ -29,7 +29,7 @@ const onSave = () => {
   const canvas = editorStore.canvas
   if (!canvas || !props.activeRoom) return
 
-  const context = editorStore.canvas?.getContext('2d')
+  const context = canvas.getContext('2d')
 
   if (!context) return
 
