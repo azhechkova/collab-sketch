@@ -31,6 +31,7 @@ playwright-report/
 *.sw?
 
 # Compiled Output and Build Artifacts
+dist
 /dist
 /node_modules
 

@@ -1,11 +1,11 @@
-import type { ColorInputWithoutInstance } from 'tinycolor2'
-
 type ColorType = { label: string; value: string }
 
 type RoomType = {
   name: string
   image?: string | null
   _id: string
+  createdAt: number
+  updatedAt: number
 }
 
 type Coordinates = {
@@ -16,7 +16,7 @@ type Coordinates = {
 type DrawReq = {
   prev: Coordinates
   point: Coordinates
-  color: ColorInputWithoutInstance
+  color: string | CanvasGradient | CanvasPattern
   size: number
   roomId: string
 }

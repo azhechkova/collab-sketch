@@ -1,13 +1,6 @@
-<script setup lang="ts">
-defineProps<{
-  isActive?: boolean
-}>()
-</script>
-
 <template>
   <div
-    class="flex cursor-pointer items-center gap-2 rounded p-3 text-gray-400 transition-all ease-in-out hover:bg-gray-300 hover:text-gray-700"
-    :class="{ 'bg-gray-100': isActive }"
+    class="flex items-center gap-2 rounded-xl p-3 text-gray-400 transition-all ease-in-out shadow-lg border-secondary-400 border-solid border-[1px]"
   >
     <slot />
   </div>

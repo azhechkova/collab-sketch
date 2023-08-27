@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { inject, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import type { Socket } from 'socket.io-client'
-import { watch } from 'vue'
 
 import type { DrawReq, RoomType } from '@/types/index'
 import { useEditorStore } from '@/stores/editor'
 import updateRoomImage from '@/utils/updateRoomImage'
+import drawLine from '@/utils/drawLine'
 import transformCoordinates from '@/utils/transformCoordinates'
+import BaseCard from '../atoms/BaseCard.vue'
 
-const { socket } = defineProps<{
-  socket: Socket
+const { activeRoom } = defineProps<{
+  activeRoom?: string | string[] | null
 }>()
+const socket = inject('socket') as Socket
 
 const store = useEditorStore()
 const isDrawing = ref(false)
@@ -18,17 +20,24 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 const previousPoint = ref<object | null>(null)
 
 const setupCanvas = (ctx: CanvasRenderingContext2D) => {
-  if (!canvasRef.value || !store.activeRoom) return
+  if (!canvasRef.value || !activeRoom) return
   store.setCanvas(canvasRef.value)
 
   socket.on('draw', ({ prev, point, color, size, roomId }) => {
-    if (roomId !== store.activeRoom?._id) return
+    if (roomId !== activeRoom) return
     drawLine({ prev, point, color, size }, ctx)
   })
 
   socket.on('updateRoom', (updatedRoom: RoomType) => {
     updateRoomImage(canvasRef.value, updatedRoom)
   })
+}
+
+const onResize = () => {
+  const canvas = canvasRef.value
+  if (!canvas) return
+  canvas.width = window.innerWidth - 100
+  canvas.height = window.innerHeight - 180
 }
 
 const startDrawing = (e: MouseEvent) => {
@@ -41,32 +50,18 @@ const startDrawing = (e: MouseEvent) => {
   context.moveTo(offsetX, offsetY)
 }
 
-const drawLine = (
-  { prev, point, color, size }: Omit<DrawReq, 'roomId'>,
-  ctx: CanvasRenderingContext2D
-) => {
-  ctx.lineWidth = size
-  ctx.strokeStyle = color
-  ctx.lineCap = 'round'
-  ctx.beginPath()
-  ctx.moveTo(prev.x, prev.y)
-  ctx.lineTo(point.x, point.y)
-  ctx.stroke()
-}
-
 const draw = (e: MouseEvent) => {
-  const context = canvasRef.value?.getContext('2d')
+  const canvas = canvasRef.value
+  const context = canvas?.getContext('2d')
 
   if (!context || !isDrawing.value) return
-  const { offsetX, offsetY } = e
-  const point = transformCoordinates(e.clientX, e.clientY, canvasRef.value)
+
+  const { clientX, clientY } = e
+  const point = transformCoordinates(clientX, clientY, canvas)
 
   context.lineWidth = store.size
   context.strokeStyle = store.color
-  context.lineCap = 'round'
-
-  context.lineTo(offsetX, offsetY)
-  context.stroke()
+  drawLine({ point, color: store.color, size: store.size }, context)
 
   const prevPoint = previousPoint.value || point
 
@@ -75,7 +70,7 @@ const draw = (e: MouseEvent) => {
     point,
     color: store.color,
     size: store.size,
-    roomId: store.activeRoom?._id
+    roomId: activeRoom
   } as DrawReq
 
   socket.emit('draw', drawObj)
@@ -87,30 +82,33 @@ const stopDrawing = () => {
   previousPoint.value = null
 }
 
-watch(
-  () => store.activeRoom?._id,
-  () => {
-    const ctx = canvasRef.value?.getContext('2d')
+watchEffect(() => {
+  const ctx = canvasRef.value?.getContext('2d')
+  const activeRoomObj = store.rooms.find((item) => item._id === activeRoom) || null
 
-    if (ctx && store.activeRoom) {
-      updateRoomImage(canvasRef.value, store.activeRoom)
-      setupCanvas(ctx)
-    }
+  if (ctx && activeRoomObj) {
+    updateRoomImage(canvasRef.value, activeRoomObj)
+    setupCanvas(ctx)
   }
-)
+})
+onMounted(() => {
+  onResize()
+  window.addEventListener('resize', onResize)
+})
+
+onUnmounted(() => {
+  window.addEventListener('resize', onResize)
+})
 </script>
 
 <template>
-  <div>
+  <BaseCard>
     <canvas
       @mousedown="startDrawing"
       @mousemove="draw"
       @mouseup="stopDrawing"
       @mouseleave="stopDrawing"
       ref="canvasRef"
-      width="500"
-      height="500"
-      class="border-black border-solid border-2"
     />
-  </div>
+  </BaseCard>
 </template>

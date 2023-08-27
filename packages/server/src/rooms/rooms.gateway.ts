@@ -29,8 +29,12 @@ export class RoomsGateway {
   }
 
   @SubscribeMessage('createRoom')
-  create(@MessageBody() createRoomDto?: CreateRoomDto) {
-    return this.roomsService.create(createRoomDto);
+  async create(@MessageBody() createRoomDto?: CreateRoomDto) {
+    const newRoom = await this.roomsService.create(createRoomDto);
+    this.connectedClients.forEach((client) => {
+      client.emit('createRoom', newRoom);
+    });
+    return newRoom;
   }
 
   @SubscribeMessage('findAllRooms')

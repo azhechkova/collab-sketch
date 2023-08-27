@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseCard from '../atoms/BaseCard.vue'
+import BaseLink from '../atoms/BaseLink.vue'
 
 defineProps<{
   onClick: () => void
@@ -9,6 +9,6 @@ defineProps<{
 
 <template>
   <button @click="onClick" class="block w-full">
-    <BaseCard :isActive="isActive"><slot /></BaseCard>
+    <BaseLink :isActive="isActive"><slot /></BaseLink>
   </button>
 </template>

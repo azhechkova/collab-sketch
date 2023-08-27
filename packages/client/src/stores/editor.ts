@@ -1,18 +1,12 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import type { RoomType } from '@/types'
-import type { ColorInputWithoutInstance } from 'tinycolor2'
 
 export const useEditorStore = defineStore('editor', () => {
-  const color = ref<ColorInputWithoutInstance>('#000')
+  const color = ref<string | CanvasGradient | CanvasPattern>('#000')
   const size = ref(1)
   const canvas = ref<HTMLCanvasElement | null>(null)
-  const activeRoom = ref<RoomType | null>(null)
   const rooms = ref<RoomType[]>([])
-
-  const setActiveRoom = (value: RoomType) => {
-    activeRoom.value = value
-  }
 
   const setCanvas = (value: HTMLCanvasElement) => {
     canvas.value = value
@@ -34,7 +28,8 @@ export const useEditorStore = defineStore('editor', () => {
 
   const addRoom = (value: RoomType) => {
     const updatedRooms = [...rooms.value, value]
-    rooms.value = updatedRooms
+    const uniqueList = [...new Map(updatedRooms.map((item) => [item._id, item])).values()]
+    rooms.value = [...uniqueList].sort((item, next) => next.createdAt - item.createdAt)
   }
 
   return {
@@ -45,8 +40,6 @@ export const useEditorStore = defineStore('editor', () => {
     addRoom,
     setCanvas,
     rooms,
-    setRooms,
-    activeRoom,
-    setActiveRoom
+    setRooms
   }
 })
