@@ -10,7 +10,13 @@
   "scripts": {
     "start:client": "npm run dev --workspace=packages/client",
     "start:server": "npm run start:dev --workspace=packages/server",
-    "start": "concurrently --kill-others-on-fail \"npm run start:client\"  \"npm run start:server\""
+    "start": "concurrently --kill-others-on-fail \"npm run start:client\"  \"npm run start:server\"",
+    "test-unit:client": "npm run test:unit --workspace=packages/client",
+    "test-e2e:client": "npm run test:e2e --workspace=packages/client",
+    "test-unit:server": "npm run test --workspace=packages/server",
+    "test-e2e:server": "npm run test:e2e --workspace=packages/server",
+    "test-unit": "concurrently --kill-others-on-fail \"npm run test-unit:client\"  \"npm run test-unit:server\"",
+    "test-e2e": "concurrently --kill-others-on-fail \"npm run test-e2e:client\"  \"npm run test-e2e:server\""
   },
   "dependencies": {
     "concurrently": "^8.2.1"

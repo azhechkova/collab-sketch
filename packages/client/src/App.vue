@@ -1,47 +1,25 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import type { Socket } from 'socket.io-client'
+import { inject, onMounted } from 'vue'
+import { useEditorStore } from './stores/editor'
+import type { RoomType } from './types'
+
+const socket = inject('socket') as Socket
+const store = useEditorStore()
+
+onMounted(() => {
+  socket.emit('findAllRooms', (res: RoomType[]) => {
+    store.setRooms(res)
+  })
+  socket.on('updateRoom', (room: RoomType) => {
+    store.updateRoom(room)
+  })
+  socket.on('createRoom', (room: RoomType) => {
+    store.addRoom(room)
+  })
+})
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  <RouterView />
 </template>
-
-<style scoped>
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>

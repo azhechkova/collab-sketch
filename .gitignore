@@ -12,7 +12,6 @@ node_modules
 
 # Generated Files and Directories
 .DS_Store
-dist
 dist-ssr
 coverage
 *.local
@@ -32,6 +31,7 @@ playwright-report/
 *.sw?
 
 # Compiled Output and Build Artifacts
+dist
 /dist
 /node_modules
 
@@ -46,6 +46,12 @@ lerna-debug.log*
 
 # Operating System Files
 .DS_Store
+
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.production
 
 # Code Coverage and Test Output
 /coverage
