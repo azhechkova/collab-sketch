@@ -8,6 +8,8 @@ type RoomType = {
   updatedAt: number
 }
 
+type CreateRoomType = Pick<RoomType, 'name'>
+
 type Coordinates = {
   x: number
   y: number
@@ -18,7 +20,7 @@ type DrawReq = {
   point: Coordinates
   color: string | CanvasGradient | CanvasPattern
   size: number
-  roomId: string
+  roomId?: string
 }
 
-export type { ColorType, RoomType, DrawReq, Coordinates }
+export type { ColorType, RoomType, CreateRoomType, DrawReq, Coordinates }

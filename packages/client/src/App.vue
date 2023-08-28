@@ -17,6 +17,9 @@ onMounted(() => {
   socket.on('createRoom', (room: RoomType) => {
     store.addRoom(room)
   })
+  socket.on('removeRoom', (roomId: string) => {
+    store.removeRoom(roomId)
+  })
 })
 </script>
 

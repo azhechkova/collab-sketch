@@ -8,6 +8,9 @@ export class Room extends Document {
   @Prop({ required: false, default: null })
   image?: string;
 
+  @Prop({ required: true })
+  name: string;
+
   @Prop()
   createdAt?: Date;
 

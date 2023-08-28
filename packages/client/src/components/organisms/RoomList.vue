@@ -1,32 +1,42 @@
 <script setup lang="ts">
 import { useEditorStore } from '@/stores/editor'
 import RoomCard from '../molecules/RoomCard.vue'
-import { inject } from 'vue'
+import { inject, ref } from 'vue'
 import type { Socket } from 'socket.io-client'
-import type { RoomType } from '@/types'
 import AddRoomCard from '../molecules/AddRoomCard.vue'
 import { storeToRefs } from 'pinia'
+import AddRoomModal from './AddRoomModal.vue'
+import type { CreateRoomType } from '@/types'
 
 const store = useEditorStore()
 const { rooms } = storeToRefs(store)
 const socket = inject('socket') as Socket
-
-const onAddRoom = () => {
-  socket.emit('createRoom', (room: RoomType) => {
-    store.addRoom(room)
-  })
+const isOpen = ref(false)
+const onAddRoom = (room: CreateRoomType) => {
+  socket.emit('createRoom', room)
+  onClose()
+}
+const onOpen = () => {
+  isOpen.value = true
+}
+const onClose = () => {
+  isOpen.value = false
+}
+const onDeleteRoom = (roomId: string) => {
+  socket.emit('removeRoom', roomId)
 }
 </script>
 
 <template>
   <ul class="grid grid-cols-3 gap-2">
     <li>
-      <button class="h-full w-full" @click="onAddRoom">
+      <button class="h-full w-full" @click="onOpen">
         <AddRoomCard />
       </button>
     </li>
     <li v-for="room in rooms" :key="room._id">
-      <RouterLink :to="room._id"> <RoomCard :room="room" /></RouterLink>
+      <RoomCard :room="room" :on-delete="onDeleteRoom" />
     </li>
+    <AddRoomModal :is-open="isOpen" :on-close="onClose" :on-save="onAddRoom" />
   </ul>
 </template>

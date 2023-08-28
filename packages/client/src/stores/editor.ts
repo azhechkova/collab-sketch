@@ -29,7 +29,11 @@ export const useEditorStore = defineStore('editor', () => {
   const addRoom = (value: RoomType) => {
     const updatedRooms = [...rooms.value, value]
     const uniqueList = [...new Map(updatedRooms.map((item) => [item._id, item])).values()]
-    rooms.value = [...uniqueList].sort((item, next) => next.createdAt - item.createdAt)
+    rooms.value = uniqueList.sort((item, next) => next.createdAt - item.createdAt)
+  }
+  const removeRoom = (id: string) => {
+    const updatedRooms = [...rooms.value].filter((item) => item._id !== id)
+    rooms.value = updatedRooms
   }
 
   return {
@@ -40,6 +44,7 @@ export const useEditorStore = defineStore('editor', () => {
     addRoom,
     setCanvas,
     rooms,
-    setRooms
+    setRooms,
+    removeRoom
   }
 })
