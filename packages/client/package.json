@@ -12,12 +12,16 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@types/feather-icons": "^4.29.1",
+    "date-fns": "^2.30.0",
+    "feather-icons": "^4.29.1",
     "pinia": "^2.1.6",
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2",
     "socket.io-mock-ts": "^1.0.2",
     "tinycolor2": "^1.6.0",
     "vue": "^3.3.4",
+    "vue-feather": "^2.0.0",
     "vue-router": "^4.2.4",
     "vue3-colorpicker": "^2.2.2"
   },

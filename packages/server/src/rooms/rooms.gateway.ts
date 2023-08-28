@@ -69,6 +69,9 @@ export class RoomsGateway {
 
   @SubscribeMessage('removeRoom')
   remove(@MessageBody() id: Types.ObjectId | string) {
+    this.connectedClients.forEach((client) => {
+      client.emit('removeRoom', id);
+    });
     return this.roomsService.remove(id);
   }
 }

@@ -6,7 +6,6 @@ import { useEditorStore } from '@/stores/editor'
 import TheLegend from '../organisms/TheLegend.vue'
 import TheEditor from '../organisms/TheEditor.vue'
 import MainTemplate from '../templates/MainTemplate.vue'
-import BaseCard from '../atoms/BaseCard.vue'
 
 const route = useRoute()
 const store = useEditorStore()
@@ -22,8 +21,8 @@ watchEffect(() => {
 
 <template>
   <MainTemplate class="flex flex-col gap-2 items-baseline">
-    <RouterLink to="/">
-      <BaseCard>Back</BaseCard>
+    <RouterLink to="/" class="flex items-center gap-2 mb-3">
+      <VueFeather type="chevron-left" /> Go back
     </RouterLink>
     <section class="flex flex-col gap-3">
       <TheLegend class="relative z-10" :activeRoom="route.params.room" />

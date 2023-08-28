@@ -4,9 +4,9 @@ import 'vue3-colorpicker/style.css'
 
 import { useEditorStore } from '@/stores/editor'
 import BaseRangeInput from '../atoms/BaseRangeInput.vue'
-import BaseButton from '../atoms/BaseButton.vue'
 import BaseCard from '../atoms/BaseCard.vue'
 import { inject } from 'vue'
+import BaseIconButton from '../atoms/BaseIconButton.vue'
 
 const props = defineProps<{
   activeRoom?: string | string[] | null
@@ -41,15 +41,18 @@ const onSave = () => {
   const newRoom = { ...roomObj, image: newImage }
 
   socket.emit('updateRoom', newRoom)
-  editorStore.updateRoom(newRoom)
 }
 </script>
 
 <template>
-  <BaseCard class="flex flex-row px-3 gap-3 items-center">
-    <BaseRangeInput v-model="editorStore.size" min="1" max="10" />
-    <ColorPicker v-model:pureColor="editorStore.color" />
-    <BaseButton @click="onClick">Clear</BaseButton>
-    <BaseButton @click="onSave">Save</BaseButton>
+  <BaseCard class="flex flex-row px-3 gap-3 items-center justify-between">
+    <div class="flex gap-4">
+      <BaseRangeInput v-model="editorStore.size" min="1" max="10" />
+      <ColorPicker v-model:pureColor="editorStore.color" />
+    </div>
+    <div class="flex gap-4">
+      <BaseIconButton type="save" class="text-primary-500" @click="onSave" />
+      <BaseIconButton type="trash" class="text-error-200" @click="onClick" />
+    </div>
   </BaseCard>
 </template>
