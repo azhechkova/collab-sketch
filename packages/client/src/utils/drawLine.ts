@@ -4,12 +4,12 @@ import type { DrawReq } from '@/types'
 /**
  * Draws a line on the canvas context using the specified parameters.
  *
- * @param {Partial<DrawReq>} params - The parameters for drawing the line.
+ * @param {DrawReq} params - The parameters for drawing the line.
  * @param {CanvasRenderingContext2D} ctx - The canvas 2D rendering context to draw on.
  * @returns {void}
  */
 
-const drawLine = (params: Partial<DrawReq>, ctx: CanvasRenderingContext2D): void => {
+const drawLine = (params: DrawReq, ctx: CanvasRenderingContext2D): void => {
   const { prev, point, color, size } = params
   ctx.lineWidth = size || EDITOR_DEFAULT_SETTINGS.size
   ctx.strokeStyle = color || EDITOR_DEFAULT_SETTINGS.color

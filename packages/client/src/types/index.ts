@@ -14,7 +14,7 @@ type Coordinates = {
 }
 
 type DrawReq = {
-  prev: Coordinates
+  prev?: Coordinates
   point: Coordinates
   color: string | CanvasGradient | CanvasPattern
   size: number
