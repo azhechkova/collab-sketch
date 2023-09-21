@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useEditorStore } from '@/stores/editor'
 import RoomList from '../organisms/RoomList.vue'
 import MainTemplate from '../templates/MainTemplate.vue'
+import { useRoomsStore } from '@/stores/room';
 
-const store = useEditorStore()
+const store = useRoomsStore()
 </script>
 
 <template>

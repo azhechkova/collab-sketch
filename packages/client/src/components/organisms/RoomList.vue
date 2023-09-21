@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useEditorStore } from '@/stores/editor'
 import RoomCard from '../molecules/RoomCard.vue'
 import { inject, ref } from 'vue'
 import type { Socket } from 'socket.io-client'
@@ -7,9 +6,10 @@ import AddRoomCard from '../molecules/AddRoomCard.vue'
 import { storeToRefs } from 'pinia'
 import AddRoomModal from './AddRoomModal.vue'
 import type { CreateRoomType } from '@/types'
+import { useRoomsStore } from '@/stores/room'
 
-const store = useEditorStore()
-const { rooms } = storeToRefs(store)
+const roomsStore = useRoomsStore()
+const { rooms } = storeToRefs(roomsStore)
 const socket = inject('socket') as Socket
 const isOpen = ref(false)
 const onAddRoom = (room: CreateRoomType) => {

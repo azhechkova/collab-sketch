@@ -2,13 +2,13 @@
 import { useRoute } from 'vue-router'
 import { ref, watchEffect } from 'vue'
 import type { RoomType } from '@/types'
-import { useEditorStore } from '@/stores/editor'
+import { useRoomsStore } from '@/stores/room'
 import TheLegend from '../organisms/TheLegend.vue'
 import TheEditor from '../organisms/TheEditor.vue'
 import MainTemplate from '../templates/MainTemplate.vue'
 
 const route = useRoute()
-const store = useEditorStore()
+const store = useRoomsStore()
 const activeRoomId = ref<string | string[] | null>(null)
 const activeRoom = ref<RoomType | null>(null)
 

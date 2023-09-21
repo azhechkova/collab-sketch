@@ -23,4 +23,16 @@ type DrawReq = {
   roomId?: string
 }
 
-export type { ColorType, RoomType, CreateRoomType, DrawReq, Coordinates }
+type ActionMode = 'select' | 'pan' | 'draw'
+
+type PointerOrTouchEvent = PointerEvent | TouchEvent
+
+export type {
+  ColorType,
+  RoomType,
+  CreateRoomType,
+  DrawReq,
+  Coordinates,
+  ActionMode,
+  PointerOrTouchEvent
+}

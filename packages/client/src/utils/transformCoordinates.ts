@@ -12,7 +12,8 @@ import type { Coordinates } from '@/types'
 const transformCoordinates = (
   clientX: number,
   clientY: number,
-  canvasRef: HTMLCanvasElement | null
+  canvasRef: HTMLCanvasElement | null,
+  zoom: number
 ): Coordinates => {
   if (!canvasRef)
     return {
@@ -21,9 +22,14 @@ const transformCoordinates = (
     }
 
   const rectangularPoints = canvasRef.getBoundingClientRect()
+
+  // Calculate the transformed coordinates based on the zoom level
+  const transformedX = (clientX - rectangularPoints.left) / zoom
+  const transformedY = (clientY - rectangularPoints.top) / zoom
+
   return {
-    x: clientX - rectangularPoints.left,
-    y: clientY - rectangularPoints.top
+    x: transformedX,
+    y: transformedY
   }
 }
 

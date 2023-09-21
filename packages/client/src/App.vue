@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Socket } from 'socket.io-client'
 import { inject, onMounted } from 'vue'
-import { useEditorStore } from './stores/editor'
+import { useRoomsStore } from './stores/room'
 import type { RoomType } from './types'
 
 const socket = inject('socket') as Socket
-const store = useEditorStore()
+const store = useRoomsStore()
 
 onMounted(() => {
   socket.emit('findAllRooms', (res: RoomType[]) => {
