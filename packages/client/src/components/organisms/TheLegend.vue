@@ -51,7 +51,7 @@ const onModeClick = (mode: ActionMode) => editorStore.setActionMode(mode)
 </script>
 
 <template>
-  <BaseCard class="flex flex-row px-3 gap-3 items-center justify-between">
+  <BaseCard class="flex flex-row px-3 gap-3 items-center justify-between bg-gray-100">
     <div class="flex gap-4">
       <BaseRangeInput v-model="editorStore.size" min="1" max="10" />
       <ColorPicker v-model:pureColor="editorStore.color" />
@@ -67,8 +67,8 @@ const onModeClick = (mode: ActionMode) => editorStore.setActionMode(mode)
       />
     </div>
     <div class="flex gap-4">
-      <BaseIconButton type="plus" @click="editorStore.incrementZoom(10)" />
-      <BaseIconButton type="minus" @click="editorStore.decrementZoom(10)" />
+      <BaseIconButton type="plus" @click="editorStore.onZoom(1.1)" />
+      <BaseIconButton type="minus" @click="editorStore.onZoom(0.9)" />
       <BaseIconButton type="save" class="text-primary-500" @click="onSave" />
       <BaseIconButton type="trash" class="text-error-200" @click="onClick" />
     </div>

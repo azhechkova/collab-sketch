@@ -6,7 +6,7 @@ import type { Socket } from 'socket.io-client'
 import type { ActionMode, RoomType } from '@/types/index'
 import { useEditorStore } from '@/stores/editor'
 import { useRoomsStore } from '@/stores/room'
-import updateRoomImage from '@/utils/updateRoomImage'
+// import updateRoomImage from '@/utils/updateRoomImage'
 import getFormatClientCoordinates from '@/utils/getFormatClientCoordinates'
 import drawLine from '@/utils/drawLine'
 import BaseCard from '../atoms/BaseCard.vue'
@@ -20,20 +20,23 @@ const socket = inject('socket') as Socket
 const store = useEditorStore()
 const roomsStore = useRoomsStore()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const wrapperRef = ref<HTMLDivElement | null>(null)
 
-const setupCanvas = (ctx: CanvasRenderingContext2D) => {
-  if (!canvasRef.value || !activeRoom || !wrapperRef.value) return
-  store.setCanvas(canvasRef.value)
-  store.setWrapper(wrapperRef.value)
+const setupCanvas = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement | null) => {
+  if (!canvas || !activeRoom) return
+
+  canvas.width = document.body.clientWidth
+  canvas.height = document.body.clientHeight
+
+  store.setCanvas(canvas)
   socket.on('draw', ({ prev, point, color, size, roomId }) => {
     if (roomId !== activeRoom) return
     drawLine({ prev, point, color, size }, ctx)
   })
 
-  socket.on('updateRoom', (updatedRoom: RoomType) => {
-    updateRoomImage(canvasRef.value, updatedRoom)
-  })
+  // TODO: Add update room with infinite canvas functionality
+  // socket.on('updateRoom', (updatedRoom: RoomType) => {
+  // updateRoomImage(canvasRef.value, updatedRoom)
+  // })
 }
 
 const onMouseMove = (event: PointerEvent | TouchEvent) => {
@@ -74,9 +77,9 @@ watchEffect(() => {
   const ctx = canvasRef.value?.getContext('2d')
   const activeRoomObj = roomsStore.rooms.find((item) => item._id === activeRoom) || null
 
-  if (ctx && activeRoomObj) {
-    updateRoomImage(canvasRef.value, activeRoomObj)
-    setupCanvas(ctx)
+  if (ctx && activeRoomObj && !store.canvas) {
+    // updateRoomImage(canvasRef.value, activeRoomObj)
+    setupCanvas(ctx, canvasRef.value)
   }
 })
 
@@ -101,10 +104,6 @@ const getCursorStyle = (mode: ActionMode | null) => {
     @mousedown="onMouseDown"
     @mousemove="onMouseMove"
   >
-    <canvas id="canvasOverlay" class="absolute inset-0" />
-
-    <div ref="wrapperRef" class="absolute bg-white w-[500px] h-[500px]">
-      <canvas ref="canvasRef" width="500" height="500" />
-    </div>
+    <canvas ref="canvasRef" />
   </BaseCard>
 </template>

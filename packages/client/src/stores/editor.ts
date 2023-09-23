@@ -1,17 +1,14 @@
-import { ref, inject } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { ActionMode, Coordinates, DrawReq, PointerOrTouchEvent } from '@/types'
-import transformCoordinates from '@/utils/transformCoordinates'
-import drawLine from '@/utils/drawLine'
-import type { Socket } from 'socket.io-client'
-import { ACTION_MODES, MAX_ZOOM, MIN_ZOOM } from '@/constants'
+import type { ActionMode, Coordinates, PointerOrTouchEvent } from '@/types'
+import { ACTION_MODES, DEFAULT_ZOOM } from '@/constants'
+import { toVirtualX, toVirtualY } from '@/utils/canvasSize'
+
+const cellSize = 40
 
 export const useEditorStore = defineStore('editor', () => {
-  const socket = inject('socket') as Socket
-
   const canvas = ref<HTMLCanvasElement | null>(null)
   const wrapper = ref<HTMLDivElement | null>(null)
-  // TODO: add different types of user interaction
   const userInteract = ref(false)
   const actionMode = ref<ActionMode | null>(ACTION_MODES.draw)
 
@@ -20,10 +17,13 @@ export const useEditorStore = defineStore('editor', () => {
   const scrollPosition = ref<Coordinates>({ x: 0, y: 0 })
   const color = ref<string | CanvasGradient | CanvasPattern>('#000')
   const size = ref(1)
-  const zoom = ref(1)
+  const zoom = ref(DEFAULT_ZOOM)
+  const offsetX = ref(0)
+  const offsetY = ref(0)
 
   const setCanvas = (value: HTMLCanvasElement) => {
     canvas.value = value
+    onDrawCanvas()
   }
 
   const setWrapper = (value: HTMLDivElement) => {
@@ -46,28 +46,32 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   const draw = (activeRoom: string | string[] | null | undefined, { x, y }: Coordinates) => {
-    const context = canvas.value?.getContext('2d')
-
-    if (!context || !userInteract.value) return
-
-    const point = transformCoordinates(x, y, canvas.value, zoom.value)
-
-    context.lineWidth = size.value
-    context.strokeStyle = color.value
-    drawLine({ point, color: color.value, size: size.value }, context)
-
-    const prevPoint = previousPoint.value || point
-
-    const drawObj = {
-      prev: prevPoint,
-      point,
-      color: color.value,
-      size: size.value,
-      roomId: activeRoom
-    } as DrawReq
-
-    socket.emit('draw', drawObj)
-    previousPoint.value = point
+    // TODO: add draw line with pan and zoom
+    // const context = canvas.value?.getContext('2d')
+    // if (!context || !userInteract.value) return
+    // const point = transformCoordinates(x, y, canvas.value, zoom.value)
+    // context.lineWidth = size.value
+    // context.strokeStyle = color.value
+    // drawLine(
+    //   {
+    //     point,
+    //     color: color.value,
+    //     size: size.value
+    //   },
+    //   context
+    // )
+    // const prevPoint = previousPoint.value || point
+    // const drawObj = {
+    //   prev: prevPoint,
+    //   point,
+    //   color: color.value,
+    //   size: size.value,
+    //   roomId: activeRoom,
+    //   offsetX: offsetX.value,
+    //   offsetY: offsetY.value
+    // } as DrawReq
+    // socket.emit('draw', drawObj)
+    // previousPoint.value = point
   }
 
   const stopDrawing = () => {
@@ -97,14 +101,11 @@ export const useEditorStore = defineStore('editor', () => {
     }
     const newX = scrollPosition.value.x + movementX
     const newY = scrollPosition.value.y + movementY
-    scrollPosition.value = {
-      x: newX,
-      y: newY
-    }
-    if (wrapper.value) {
-      wrapper.value.style.top = `${newY}px`
-      wrapper.value.style.left = `${newX}px`
-    }
+
+    offsetX.value = newX / zoom.value
+    offsetY.value = newY / zoom.value
+
+    onDrawCanvas()
   }
 
   const onStartPan = () => {
@@ -115,23 +116,59 @@ export const useEditorStore = defineStore('editor', () => {
     userInteract.value = false
   }
 
-  const incrementZoom = (value: number) => {
-    let newZoom = zoom.value - value
+  const onDrawCanvas = () => {
+    const canvasEl = canvas.value
+    const context = canvasEl?.getContext('2d')
 
-    if (newZoom > MAX_ZOOM) {
-      newZoom = MAX_ZOOM
+    if (canvasEl && context) {
+      canvasEl.width = document.body.clientWidth
+      canvasEl.height = document.body.clientHeight
+      context.clearRect(0, 0, canvasEl.width, canvasEl.height)
+
+      context.strokeStyle = 'rgb(229,231,235)'
+      context.lineWidth = 1
+      context.beginPath()
+
+      const width = canvasEl.clientWidth
+      const height = canvasEl.clientHeight
+
+      for (
+        let x = (offsetX.value % cellSize) * zoom.value;
+        x <= width;
+        x += cellSize * zoom.value
+      ) {
+        const source = x
+        context.moveTo(source, 0)
+        context.lineTo(source, height)
+
+        context.fillText(`${toVirtualX(source, offsetX.value, zoom.value).toFixed(0)}`, source, 10)
+      }
+
+      for (
+        let y = (offsetY.value % cellSize) * zoom.value;
+        y <= height;
+        y += cellSize * zoom.value
+      ) {
+        const destination = y
+        context.moveTo(0, destination)
+        context.lineTo(width, destination)
+
+        context.fillText(
+          `${toVirtualY(destination, offsetY.value, zoom.value).toFixed(0)}`,
+          0,
+          destination
+        )
+      }
+
+      context.stroke()
     }
-    zoom.value = newZoom
-    if (wrapper.value) wrapper.value.style.transform = `scale(${newZoom / 100})`
   }
 
-  const decrementZoom = (value: number) => {
-    let newZoom = zoom.value - value
-    if (newZoom < MIN_ZOOM) {
-      newZoom = MIN_ZOOM
-    }
+  const onZoom = (amount: number) => {
+    const newZoom = zoom.value * amount
     zoom.value = newZoom
-    if (wrapper.value) wrapper.value.style.transform = `scale(${newZoom / 100})`
+
+    onDrawCanvas()
   }
 
   return {
@@ -152,7 +189,6 @@ export const useEditorStore = defineStore('editor', () => {
     onPan,
     onStartPan,
     onStopPan,
-    incrementZoom,
-    decrementZoom
+    onZoom
   }
 })

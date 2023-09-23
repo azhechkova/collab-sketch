@@ -21,11 +21,14 @@ watchEffect(() => {
 
 <template>
   <MainTemplate class="flex flex-col gap-2 items-baseline">
-    <RouterLink to="/" class="flex items-center gap-2 mb-3">
+    <RouterLink
+      to="/"
+      class="flex items-center gap-2 mb-3 absolute top-2 left-2 bg-gray-20 p-2 z-10"
+    >
       <VueFeather type="chevron-left" /> Go back
     </RouterLink>
     <section class="flex flex-col gap-3">
-      <TheLegend class="relative z-10" :activeRoom="route.params.room" />
+      <TheLegend class="z-10 absolute top-2 right-0" :activeRoom="route.params.room" />
       <TheEditor class="flex-shrink-0" :activeRoom="route.params.room" />
     </section>
   </MainTemplate>
