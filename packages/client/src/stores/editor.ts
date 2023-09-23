@@ -70,8 +70,8 @@ export const useEditorStore = defineStore('editor', () => {
       previousTouchRef.value.current = event.touches[0]
     }
 
-    offsetX.value += movementX
-    offsetY.value += movementY
+    offsetX.value += movementX / zoom.value
+    offsetY.value += movementY / zoom.value
 
     onDrawCanvas()
   }
