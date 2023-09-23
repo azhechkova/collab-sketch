@@ -21,6 +21,7 @@ const drawLine = (params: DrawReq, ctx: CanvasRenderingContext2D): void => {
     ctx.beginPath()
     ctx.moveTo(prev.x, prev.y)
     ctx.lineTo(point.x, point.y)
+
     ctx.stroke()
   } else {
     ctx.lineTo(point.x, point.y)

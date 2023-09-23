@@ -1,13 +1,16 @@
+<!-- eslint-disable no-case-declarations -->
 <script setup lang="ts">
-import { inject, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { inject, ref, watchEffect } from 'vue'
 import type { Socket } from 'socket.io-client'
 
-import type { DrawReq, RoomType } from '@/types/index'
+import type { ActionMode } from '@/types/index'
 import { useEditorStore } from '@/stores/editor'
-import updateRoomImage from '@/utils/updateRoomImage'
+import { useRoomsStore } from '@/stores/room'
+// import updateRoomImage from '@/utils/updateRoomImage'
+import getFormatClientCoordinates from '@/utils/getFormatClientCoordinates'
 import drawLine from '@/utils/drawLine'
-import transformCoordinates from '@/utils/transformCoordinates'
 import BaseCard from '../atoms/BaseCard.vue'
+import { ACTION_MODES } from '@/constants'
 
 const { activeRoom } = defineProps<{
   activeRoom?: string | string[] | null
@@ -15,100 +18,92 @@ const { activeRoom } = defineProps<{
 const socket = inject('socket') as Socket
 
 const store = useEditorStore()
-const isDrawing = ref(false)
+const roomsStore = useRoomsStore()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const previousPoint = ref<object | null>(null)
 
-const setupCanvas = (ctx: CanvasRenderingContext2D) => {
-  if (!canvasRef.value || !activeRoom) return
-  store.setCanvas(canvasRef.value)
+const setupCanvas = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement | null) => {
+  if (!canvas || !activeRoom) return
 
+  canvas.width = document.body.clientWidth
+  canvas.height = document.body.clientHeight
+
+  store.setCanvas(canvas)
   socket.on('draw', ({ prev, point, color, size, roomId }) => {
     if (roomId !== activeRoom) return
     drawLine({ prev, point, color, size }, ctx)
   })
 
-  socket.on('updateRoom', (updatedRoom: RoomType) => {
-    updateRoomImage(canvasRef.value, updatedRoom)
-  })
+  // TODO: Add update room with infinite canvas functionality
+  // socket.on('updateRoom', (updatedRoom: RoomType) => {
+  // updateRoomImage(canvasRef.value, updatedRoom)
+  // })
 }
 
-const onResize = () => {
-  const canvas = canvasRef.value
-  if (!canvas) return
-  canvas.width = window.innerWidth - 100
-  canvas.height = window.innerHeight - 180
+const onMouseMove = (event: PointerEvent | TouchEvent) => {
+  switch (store.actionMode) {
+    case ACTION_MODES.draw:
+      const { clientX, clientY } = getFormatClientCoordinates(event)
+
+      store.draw(activeRoom, { x: clientX, y: clientY })
+      break
+    case ACTION_MODES.pan:
+      store.onPan(event)
+      break
+  }
 }
 
-const startDrawing = (e: MouseEvent) => {
-  const context = canvasRef.value?.getContext('2d')
-  if (!context) return
-  isDrawing.value = true
+const onMouseDown = (e: MouseEvent) => {
+  switch (store.actionMode) {
+    case ACTION_MODES.draw:
+      store.startDrawing(e)
+      break
 
-  const { offsetX, offsetY } = e
-  context.beginPath()
-  context.moveTo(offsetX, offsetY)
+    case ACTION_MODES.pan:
+      store.onStartPan()
+  }
 }
 
-const draw = (e: MouseEvent) => {
-  const canvas = canvasRef.value
-  const context = canvas?.getContext('2d')
-
-  if (!context || !isDrawing.value) return
-
-  const { clientX, clientY } = e
-  const point = transformCoordinates(clientX, clientY, canvas)
-
-  context.lineWidth = store.size
-  context.strokeStyle = store.color
-  drawLine({ point, color: store.color, size: store.size }, context)
-
-  const prevPoint = previousPoint.value || point
-
-  const drawObj = {
-    prev: prevPoint,
-    point,
-    color: store.color,
-    size: store.size,
-    roomId: activeRoom
-  } as DrawReq
-
-  socket.emit('draw', drawObj)
-  previousPoint.value = point
-}
-
-const stopDrawing = () => {
-  isDrawing.value = false
-  previousPoint.value = null
+const onMouseUp = () => {
+  switch (store.actionMode) {
+    case ACTION_MODES.draw:
+      store.stopDrawing()
+      break
+    case ACTION_MODES.pan:
+      store.onStopPan()
+  }
 }
 
 watchEffect(() => {
   const ctx = canvasRef.value?.getContext('2d')
-  const activeRoomObj = store.rooms.find((item) => item._id === activeRoom) || null
+  const activeRoomObj = roomsStore.rooms.find((item) => item._id === activeRoom) || null
 
-  if (ctx && activeRoomObj) {
-    updateRoomImage(canvasRef.value, activeRoomObj)
-    setupCanvas(ctx)
+  if (ctx && activeRoomObj && !store.canvas) {
+    // updateRoomImage(canvasRef.value, activeRoomObj)
+    setupCanvas(ctx, canvasRef.value)
   }
 })
-onMounted(() => {
-  onResize()
-  window.addEventListener('resize', onResize)
-})
 
-onUnmounted(() => {
-  window.removeEventListener('resize', onResize)
-})
+const getCursorStyle = (mode: ActionMode | null) => {
+  switch (mode) {
+    case 'pan':
+      return store.userInteract ? 'grabbing' : 'grab'
+    default:
+      return 'default'
+  }
+}
 </script>
 
 <template>
-  <BaseCard>
-    <canvas
-      @mousedown="startDrawing"
-      @mousemove="draw"
-      @mouseup="stopDrawing"
-      @mouseleave="stopDrawing"
-      ref="canvasRef"
-    />
+  <BaseCard
+    :style="{
+      cursor: getCursorStyle(store.actionMode)
+    }"
+    class="relative bg-gray-100 w-[calc(100vw-100px)] h-[calc(100vw-100px)] overflow-hidden"
+    @mouseup="onMouseUp"
+    @mouseleave="onMouseUp"
+    @mousedown="onMouseDown"
+    @mousemove="onMouseMove"
+  >
+    <canvas ref="canvasRef" />
   </BaseCard>
 </template>

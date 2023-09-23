@@ -21,9 +21,14 @@ const transformCoordinates = (
     }
 
   const rectangularPoints = canvasRef.getBoundingClientRect()
+
+  // Calculate the transformed coordinates based on the zoom level
+  const transformedX = clientX - rectangularPoints.left
+  const transformedY = clientY - rectangularPoints.top
+
   return {
-    x: clientX - rectangularPoints.left,
-    y: clientY - rectangularPoints.top
+    x: transformedX,
+    y: transformedY
   }
 }
 
