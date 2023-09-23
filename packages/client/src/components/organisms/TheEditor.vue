@@ -3,7 +3,7 @@
 import { inject, ref, watchEffect } from 'vue'
 import type { Socket } from 'socket.io-client'
 
-import type { ActionMode, RoomType } from '@/types/index'
+import type { ActionMode } from '@/types/index'
 import { useEditorStore } from '@/stores/editor'
 import { useRoomsStore } from '@/stores/room'
 // import updateRoomImage from '@/utils/updateRoomImage'

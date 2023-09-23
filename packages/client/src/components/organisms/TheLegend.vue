@@ -21,13 +21,7 @@ const roomStore = useRoomsStore()
 const socket = inject('socket') as Socket
 
 const onClick = () => {
-  const canvas = editorStore.canvas
-  if (!canvas) return
-
-  const context = canvas.getContext('2d')
-  if (!context) return
-
-  context.clearRect(0, 0, canvas.width, canvas.height)
+  editorStore.onClearCanvas()
 }
 
 const onSave = () => {

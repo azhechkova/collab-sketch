@@ -1,8 +1,10 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { ActionMode, Coordinates, PointerOrTouchEvent } from '@/types'
-import { ACTION_MODES, DEFAULT_ZOOM } from '@/constants'
+import type { ActionMode, Coordinates, DrawReq, PointerOrTouchEvent } from '@/types'
 import { toVirtualX, toVirtualY } from '@/utils/canvasSize'
+import { ACTION_MODES, DEFAULT_ZOOM } from '@/constants'
+import transformCoordinates from '@/utils/transformCoordinates'
+import drawLine from '@/utils/drawLine'
 
 const cellSize = 40
 
@@ -11,19 +13,23 @@ export const useEditorStore = defineStore('editor', () => {
   const wrapper = ref<HTMLDivElement | null>(null)
   const userInteract = ref(false)
   const actionMode = ref<ActionMode | null>(ACTION_MODES.draw)
-
   const previousPoint = ref<Coordinates | null>(null)
   const previousTouchRef = ref<any>(null)
-  const scrollPosition = ref<Coordinates>({ x: 0, y: 0 })
   const color = ref<string | CanvasGradient | CanvasPattern>('#000')
   const size = ref(1)
   const zoom = ref(DEFAULT_ZOOM)
   const offsetX = ref(0)
   const offsetY = ref(0)
+  const drawings = ref<DrawReq[]>([])
 
   const setCanvas = (value: HTMLCanvasElement) => {
     canvas.value = value
     onDrawCanvas()
+  }
+
+  const getContext = () => {
+    const context = canvas?.value?.getContext('2d')
+    return context || null
   }
 
   const setWrapper = (value: HTMLDivElement) => {
@@ -35,48 +41,12 @@ export const useEditorStore = defineStore('editor', () => {
     actionMode.value = mode
   }
 
-  const startDrawing = (e: MouseEvent) => {
-    const context = canvas.value?.getContext('2d')
+  const startDrawing = ({ offsetX, offsetY }: MouseEvent) => {
+    const context = getContext()
     if (!context) return
     userInteract.value = true
 
-    const { offsetX, offsetY } = e
-    context.beginPath()
-    context.moveTo(offsetX, offsetY)
-  }
-
-  const draw = (activeRoom: string | string[] | null | undefined, { x, y }: Coordinates) => {
-    // TODO: add draw line with pan and zoom
-    // const context = canvas.value?.getContext('2d')
-    // if (!context || !userInteract.value) return
-    // const point = transformCoordinates(x, y, canvas.value, zoom.value)
-    // context.lineWidth = size.value
-    // context.strokeStyle = color.value
-    // drawLine(
-    //   {
-    //     point,
-    //     color: color.value,
-    //     size: size.value
-    //   },
-    //   context
-    // )
-    // const prevPoint = previousPoint.value || point
-    // const drawObj = {
-    //   prev: prevPoint,
-    //   point,
-    //   color: color.value,
-    //   size: size.value,
-    //   roomId: activeRoom,
-    //   offsetX: offsetX.value,
-    //   offsetY: offsetY.value
-    // } as DrawReq
-    // socket.emit('draw', drawObj)
-    // previousPoint.value = point
-  }
-
-  const stopDrawing = () => {
-    userInteract.value = false
-    previousPoint.value = null
+    previousPoint.value = { x: offsetX, y: offsetY }
   }
 
   const onPan = (event: PointerOrTouchEvent) => {
@@ -99,21 +69,39 @@ export const useEditorStore = defineStore('editor', () => {
     if ('touches' in event) {
       previousTouchRef.value.current = event.touches[0]
     }
-    const newX = scrollPosition.value.x + movementX
-    const newY = scrollPosition.value.y + movementY
 
-    offsetX.value = newX / zoom.value
-    offsetY.value = newY / zoom.value
+    offsetX.value += movementX
+    offsetY.value += movementY
 
     onDrawCanvas()
   }
 
-  const onStartPan = () => {
-    userInteract.value = true
-  }
+  const onDrawGrid = () => {
+    const context = getContext()
+    const width = canvas?.value?.clientWidth || 0
+    const height = canvas?.value?.clientHeight || 0
 
-  const onStopPan = () => {
-    userInteract.value = false
+    if (!context) return
+
+    context.strokeStyle = 'rgb(229,231,235)'
+    context.lineWidth = 1
+    context.beginPath()
+
+    const cellZoom = cellSize * zoom.value
+
+    for (let x = offsetX.value % cellZoom; x <= width; x += cellZoom) {
+      const source = x
+      context.moveTo(source, 0)
+      context.lineTo(source, height)
+    }
+
+    for (let y = offsetY.value % cellZoom; y <= height; y += cellZoom) {
+      const destination = y
+      context.moveTo(0, destination)
+      context.lineTo(width, destination)
+    }
+
+    context.stroke()
   }
 
   const onDrawCanvas = () => {
@@ -125,42 +113,26 @@ export const useEditorStore = defineStore('editor', () => {
       canvasEl.height = document.body.clientHeight
       context.clearRect(0, 0, canvasEl.width, canvasEl.height)
 
-      context.strokeStyle = 'rgb(229,231,235)'
-      context.lineWidth = 1
-      context.beginPath()
+      onDrawGrid()
 
-      const width = canvasEl.clientWidth
-      const height = canvasEl.clientHeight
+      for (let i = 0; i < drawings.value.length; i++) {
+        const line = drawings.value[i]
+        const formatParams = {
+          ...line,
+          prev: line.prev
+            ? {
+                x: toVirtualX(line.prev.x, offsetX.value, zoom.value),
+                y: toVirtualY(line.prev.y, offsetY.value, zoom.value)
+              }
+            : undefined,
+          point: {
+            x: toVirtualX(line.point.x, offsetX.value, zoom.value),
+            y: toVirtualY(line.point.y, offsetY.value, zoom.value)
+          }
+        }
 
-      for (
-        let x = (offsetX.value % cellSize) * zoom.value;
-        x <= width;
-        x += cellSize * zoom.value
-      ) {
-        const source = x
-        context.moveTo(source, 0)
-        context.lineTo(source, height)
-
-        context.fillText(`${toVirtualX(source, offsetX.value, zoom.value).toFixed(0)}`, source, 10)
+        drawLine(formatParams, context)
       }
-
-      for (
-        let y = (offsetY.value % cellSize) * zoom.value;
-        y <= height;
-        y += cellSize * zoom.value
-      ) {
-        const destination = y
-        context.moveTo(0, destination)
-        context.lineTo(width, destination)
-
-        context.fillText(
-          `${toVirtualY(destination, offsetY.value, zoom.value).toFixed(0)}`,
-          0,
-          destination
-        )
-      }
-
-      context.stroke()
     }
   }
 
@@ -171,16 +143,65 @@ export const useEditorStore = defineStore('editor', () => {
     onDrawCanvas()
   }
 
+  const stopDrawing = () => {
+    userInteract.value = false
+    previousPoint.value = null
+  }
+
+  const onStartPan = () => {
+    userInteract.value = true
+  }
+
+  const onStopPan = () => {
+    userInteract.value = false
+  }
+
+  const onClearCanvas = () => {
+    const canvasEl = canvas.value
+    if (!canvasEl) return
+
+    const context = canvasEl.getContext('2d')
+    if (!context) return
+
+    context.clearRect(0, 0, canvasEl.width, canvasEl.height)
+    drawings.value = []
+    onDrawGrid()
+  }
+
+  const draw = (activeRoom: string | string[] | null | undefined, { x, y }: Coordinates) => {
+    const context = canvas.value?.getContext('2d')
+    if (!context || !userInteract.value) return
+
+    const point = transformCoordinates(x, y, canvas.value)
+
+    const prevPoint = previousPoint.value || point
+
+    const drawObj = {
+      prev: prevPoint,
+      point,
+      color: color.value,
+      size: size.value,
+      roomId: activeRoom
+    } as DrawReq
+
+    drawLine(drawObj, context)
+
+    drawings.value.push(drawObj)
+
+    // socket.emit('draw', drawObj)
+    previousPoint.value = point
+  }
+
   return {
     color,
     canvas,
     size,
     actionMode,
-    scrollPosition,
     wrapper,
     userInteract,
     zoom,
     setActionMode,
+    onClearCanvas,
     setCanvas,
     setWrapper,
     draw,
